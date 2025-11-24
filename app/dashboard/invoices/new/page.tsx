@@ -1,19 +1,54 @@
 "use client";
-import { createClient } from "@/lib/supabase/client";
-import { redirect } from "next/navigation";
+
+import { useState } from "react";
 import { createInvoice } from "@/app/actions/invoices";
+import { extractInvoiceFromPDF } from "@/app/actions/extractInvoice";
+
+type InvoiceData = {
+  invoice_number: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  amount: number | null;
+  issue_date: string | null;
+  due_date: string | null;
+};
 
 export default function NewInvoice() {
-  // Generate default invoice number
-  const invoiceNumber = `INV-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+  const [extracting, setExtracting] = useState(false);
+  const [extractedData, setExtractedData] = useState<InvoiceData | null>(null);
+  const [showUpload, setShowUpload] = useState(false);
 
-  // Default dates
+  // Default values
+  const invoiceNumber =
+    extractedData?.invoice_number ||
+    `INV-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
   const today = new Date().toISOString().split("T")[0];
   const thirtyDaysLater = new Date(
     new Date().getTime() + 30 * 24 * 60 * 60 * 1000
   )
     .toISOString()
     .split("T")[0];
+
+  // Handler for PDF extraction
+  const handleExtractPDF = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setExtracting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await extractInvoiceFromPDF(formData);
+
+    if (result.success && result.data) {
+      setExtractedData(result.data);
+      setShowUpload(false);
+    } else {
+      alert(
+        result.error ||
+          "Failed to extract invoice data. Please try again or enter manually."
+      );
+    }
+
+    setExtracting(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -32,43 +67,37 @@ export default function NewInvoice() {
       {/* Form */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow">
-          <form action={createInvoice} className="p-6 space-y-6">
-            {/* Upload Method Selector */}
-            <div className="border-b border-gray-200 pb-6 mb-6">
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const uploadSection =
-                      document.getElementById("upload-section");
-                    const manualSection =
-                      document.getElementById("manual-section");
-                    uploadSection?.classList.remove("hidden");
-                    manualSection?.classList.add("hidden");
-                  }}
-                  className="flex-1 py-3 px-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 transition text-center"
-                >
-                  📄 Upload PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const uploadSection =
-                      document.getElementById("upload-section");
-                    const manualSection =
-                      document.getElementById("manual-section");
-                    uploadSection?.classList.add("hidden");
-                    manualSection?.classList.remove("hidden");
-                  }}
-                  className="flex-1 py-3 px-4 border-2 border-blue-500 bg-blue-50 rounded-lg text-center"
-                >
-                  ✍️ Enter Manually
-                </button>
-              </div>
+          {/* Upload Method Selector */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setShowUpload(true)}
+                className={`flex-1 py-3 px-4 border-2 rounded-lg transition text-center ${
+                  showUpload
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 hover:border-blue-500"
+                }`}
+              >
+                📄 Upload PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowUpload(false)}
+                className={`flex-1 py-3 px-4 border-2 rounded-lg transition text-center ${
+                  !showUpload
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 hover:border-blue-500"
+                }`}
+              >
+                ✍️ Enter Manually
+              </button>
             </div>
+          </div>
 
-            {/* PDF Upload Section */}
-            <div id="upload-section" className="hidden space-y-4">
+          {/* PDF Upload Section */}
+          {showUpload && (
+            <form onSubmit={handleExtractPDF} className="p-6 space-y-4">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <input
                   type="file"
@@ -77,14 +106,13 @@ export default function NewInvoice() {
                   accept=".pdf"
                   className="hidden"
                   onChange={(e) => {
-                    // We'll handle this with a server action
                     const file = e.target.files?.[0];
                     if (file) {
-                      // Show file name
                       const label = document.getElementById("file-label");
                       if (label) label.textContent = file.name;
                     }
                   }}
+                  required
                 />
                 <label htmlFor="pdf-upload" className="cursor-pointer">
                   <div className="text-gray-400 mb-2">
@@ -108,15 +136,40 @@ export default function NewInvoice() {
                 </label>
               </div>
               <button
-                type="button"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+                type="submit"
+                disabled={extracting}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Extract Invoice Data
+                {extracting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Extracting...
+                  </span>
+                ) : (
+                  "Extract Invoice Data"
+                )}
               </button>
-            </div>
+            </form>
+          )}
 
-            {/* Manual Entry Section */}
-            <div id="manual-section">
+          {/* Manual Entry Section */}
+          {!showUpload && (
+            <form action={createInvoice} className="p-6 space-y-6">
               {/* Invoice Number */}
               <div>
                 <label
@@ -147,6 +200,7 @@ export default function NewInvoice() {
                   type="text"
                   id="customer_name"
                   name="customer_name"
+                  defaultValue={extractedData?.customer_name || ""}
                   placeholder="Acme Corp"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   required
@@ -165,6 +219,7 @@ export default function NewInvoice() {
                   type="email"
                   id="customer_email"
                   name="customer_email"
+                  defaultValue={extractedData?.customer_email || ""}
                   placeholder="billing@acmecorp.com"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   required
@@ -187,6 +242,7 @@ export default function NewInvoice() {
                     name="amount"
                     step="0.01"
                     min="0"
+                    defaultValue={extractedData?.amount || ""}
                     placeholder="1000.00"
                     className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     required
@@ -207,47 +263,91 @@ export default function NewInvoice() {
                     type="date"
                     id="issue_date"
                     name="issue_date"
-                    defaultValue={today}
+                    defaultValue={extractedData?.issue_date || today}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     required
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="due_date"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Due Date
-                  </label>
+                {extractedData?.due_date ? (
                   <input
                     type="date"
-                    id=" due_date"
+                    id="due_date"
                     name="due_date"
-                    defaultValue={thirtyDaysLater}
+                    defaultValue={extractedData.due_date}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     required
                   />
-                </div>
-              </div>
-            </div>
+                ) : (
+                  <>
+                    <select
+                      id="due_date_selector"
+                      defaultValue="30"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const dueDateInput = document.getElementById(
+                          "due_date"
+                        ) as HTMLInputElement;
 
-            {/* Submit */}
-            <div className="flex gap-4 pt-4 border-t border-gray-200">
-              <button
-                type="submit"
-                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition"
-              >
-                Create Invoice
-              </button>
-              <a
-                href="/dashboard"
-                className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition text-center"
-              >
-                Cancel
-              </a>
-            </div>
-          </form>
+                        if (value === "custom") {
+                          // Show date picker
+                          dueDateInput.type = "date";
+                          dueDateInput.classList.remove("hidden");
+                        } else {
+                          // Calculate date based on days
+                          const issueDate =
+                            (
+                              document.getElementById(
+                                "issue_date"
+                              ) as HTMLInputElement
+                            )?.value || today;
+                          const daysToAdd = parseInt(value);
+                          const dueDate = new Date(issueDate);
+                          dueDate.setDate(dueDate.getDate() + daysToAdd);
+                          dueDateInput.type = "hidden";
+                          dueDateInput.value = dueDate
+                            .toISOString()
+                            .split("T")[0];
+                        }
+                      }}
+                    >
+                      <option value="7">Net 7 (Due in 7 days)</option>
+                      <option value="15">Net 15 (Due in 15 days)</option>
+                      <option value="30">Net 30 (Due in 30 days)</option>
+                      <option value="45">Net 45 (Due in 45 days)</option>
+                      <option value="60">Net 60 (Due in 60 days)</option>
+                      <option value="90">Net 90 (Due in 90 days)</option>
+                      <option value="custom">Custom Date...</option>
+                    </select>
+                    <input
+                      type="hidden"
+                      id="due_date"
+                      name="due_date"
+                      defaultValue={thirtyDaysLater}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mt-2"
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Submit */}
+              <div className="flex gap-4 pt-4 border-t border-gray-200">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition"
+                >
+                  Create Invoice
+                </button>
+                <a
+                  href="/dashboard"
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition text-center"
+                >
+                  Cancel
+                </a>
+              </div>
+            </form>
+          )}
         </div>
       </main>
     </div>
