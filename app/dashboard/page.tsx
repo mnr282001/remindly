@@ -1,6 +1,6 @@
 'use client';
 import { createClient } from "@/lib/supabase/client";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Invoice, Company } from "@/lib/types/types";
 import { signOut } from "@/app/actions/auth";
@@ -12,6 +12,7 @@ type Stats = {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -190,7 +191,11 @@ export default function Dashboard() {
                         invoice.status === "unpaid";
 
                       return (
-                        <tr key={invoice.id} className="hover:bg-gray-50">
+                        <tr
+                          key={invoice.id}
+                          onClick={() => router.push(`/dashboard/invoices/${invoice.id}`)}
+                          className="hover:bg-gray-50 cursor-pointer"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {invoice.invoice_number}
                           </td>
