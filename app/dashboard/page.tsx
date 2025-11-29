@@ -4,6 +4,7 @@ import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Invoice, Company } from "@/lib/types/types";
 import { signOut } from "@/app/actions/auth";
+import AnimatedBackground from "@/app/components/AnimatedBackground";
 
 type Stats = {
   outstanding: number;
@@ -77,114 +78,140 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Remindly</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.email}</span>
-            <form action={signOut}>
-              <button className="text-sm text-gray-600 hover:text-gray-900">
-                Sign Out
-              </button>
-            </form>
+    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+      <AnimatedBackground />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="backdrop-blur-xl bg-black/50 border-b border-white/10 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/50">
+                <span className="text-white font-bold text-xl">R</span>
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Remindly</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-400">{user.email}</span>
+              <form action={signOut}>
+                <button className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white transition-all">
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-500">Outstanding</div>
-            <div className="mt-2 text-3xl font-bold text-gray-900">
-              ${stats.outstanding.toFixed(2)}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+            <div className="relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+              <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Outstanding</div>
+              <div className="mt-2 text-4xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                ${stats.outstanding.toFixed(2)}
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-500">Overdue</div>
-            <div className="mt-2 text-3xl font-bold text-red-600">
-              ${stats.overdue.toFixed(2)}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+            <div className="relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+              <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Overdue</div>
+              <div className="mt-2 text-4xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                ${stats.overdue.toFixed(2)}
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm font-medium text-gray-500">
-              Reminders Sent
-            </div>
-            <div className="mt-2 text-3xl font-bold text-blue-600">
-              {stats.remindersSent}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+            <div className="relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+              <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+                Reminders Sent
+              </div>
+              <div className="mt-2 text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                {stats.remindersSent}
+              </div>
             </div>
           </div>
         </div>
         {/* Invoices Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Invoices</h2>
-            <a
-              href="/dashboard/invoices/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              + New Invoice
-            </a>
-          </div>
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-300"></div>
+          <div className="relative bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-purple-900/20 to-blue-900/20">
+              <h2 className="text-xl font-bold text-white">Invoices</h2>
+              <a
+                href="/dashboard/invoices/new"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/50 transition-all font-semibold flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Invoice
+              </a>
+            </div>
 
           <div className="p-6">
             {invoices.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <div className="text-center py-16">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl mb-6">
+                  <svg
+                    className="w-10 h-10 text-purple-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
                   No invoices yet
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="text-gray-400 mb-6">
                   Get started by creating your first invoice.
                 </p>
-                <div className="mt-6">
-                  <a
-                    href="/dashboard/invoices/new"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block"
-                  >
-                    Create Invoice
-                  </a>
-                </div>
+                <a
+                  href="/dashboard/invoices/new"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/50 transition-all font-semibold"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Invoice
+                </a>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full">
                   <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <tr className="border-b border-white/10">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Invoice #
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Due Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-white/5">
                     {invoices.map((invoice) => {
                       const isOverdue =
                         new Date(invoice.due_date) < new Date() &&
@@ -194,40 +221,40 @@ export default function Dashboard() {
                         <tr
                           key={invoice.id}
                           onClick={() => router.push(`/dashboard/invoices/${invoice.id}`)}
-                          className="hover:bg-gray-50 cursor-pointer"
+                          className="hover:bg-white/5 cursor-pointer transition-colors group"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white group-hover:text-purple-400 transition-colors">
                             {invoice.invoice_number}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">
+                            <div className="text-sm font-medium text-white">
                               {invoice.customer_name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-400">
                               {invoice.customer_email}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">
                             ${parseFloat(String(invoice.amount)).toFixed(2)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {new Date(invoice.due_date).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              className={`px-3 py-1 inline-flex text-xs font-bold rounded-full ${
                                 invoice.status === "paid"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                   : isOverdue
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                  : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                               }`}
                             >
                               {invoice.status === "paid"
-                                ? "Paid"
+                                ? "✓ Paid"
                                 : isOverdue
-                                ? "Overdue"
-                                : "Unpaid"}
+                                ? "⚠ Overdue"
+                                : "⏳ Unpaid"}
                             </span>
                           </td>
                         </tr>
@@ -238,8 +265,10 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

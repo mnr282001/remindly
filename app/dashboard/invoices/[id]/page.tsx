@@ -5,6 +5,7 @@ import { Invoice, Reminder } from '@/lib/types/types'
 import { generateReminder } from '@/app/actions/generateReminder'
 import { use, useEffect, useState } from 'react'
 import { redirect, useRouter } from 'next/navigation'
+import AnimatedBackground from '@/app/components/AnimatedBackground'
 
 type Tone = 'friendly' | 'neutral' | 'firm'
 
@@ -153,13 +154,16 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+      <AnimatedBackground />
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="backdrop-blur-xl bg-black/50 border-b border-white/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3 transition group"
+            className="flex items-center gap-2 text-gray-400 hover:text-white mb-3 transition group"
           >
             <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -168,18 +172,18 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                 {invoice?.invoice_number}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">{invoice?.customer_name}</p>
+              <p className="text-sm text-gray-400 mt-1">{invoice?.customer_name}</p>
             </div>
             <span
-              className={`px-4 py-2 text-sm font-semibold rounded-full ${
+              className={`px-4 py-2 text-sm font-bold rounded-full ${
                 invoice?.status === 'paid'
-                  ? 'bg-green-100 text-green-800'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                   : isOverdue
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
               }`}
             >
               {invoice?.status === 'paid'
@@ -447,6 +451,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
       </main>
+      </div>
     </div>
   )
 }
